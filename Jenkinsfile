@@ -40,7 +40,7 @@ spec:
   volumes:
     - name: kaniko-secret
       secret:
-        secretName: artifactory-credentials
+        secretName: docker-cred
         items:
           - key: .dockerconfigjson
             path: config.json
@@ -64,7 +64,7 @@ spec:
         stage('SonarQube analysis') {
             steps {
                 container('sonar-scanner-cli') {
-                    withSonarQubeEnv('Default SonarQube Server') {
+                    withSonarQubeEnv('sonarqube') {
                         sh """
                             sonar-scanner \
                             -Dsonar.projectKey=Hello-World \
@@ -117,17 +117,17 @@ spec:
         stage('Publish build info') {
             steps {
                 rtCreateDockerBuild (
-                    serverId: 'Default Artifactory Server',
+                    serverId: 'jfrog',
                     sourceRepo: 'docker-local',
                     kanikoImageFile: "frontend-image-file"
                 )
                 rtCreateDockerBuild (
-                    serverId: 'Default Artifactory Server',
+                    serverId: 'jfrog',
                     sourceRepo: 'docker-local',
                     kanikoImageFile: "backend-image-file"
                 )
                 rtPublishBuildInfo (
-                    serverId: 'Default Artifactory Server'
+                    serverId: 'jfrog'
                 )
             }
         } 
