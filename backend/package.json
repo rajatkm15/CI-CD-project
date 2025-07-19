@@ -21,7 +21,5 @@
     },
     "nyc": {
         "reporter": ["lcov", "text-summary"]
-    },
-    "author": "Nikhil Pathania",
-    "license": "MIT"
+    }
 }
