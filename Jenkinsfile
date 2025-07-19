@@ -109,14 +109,14 @@ pipeline {
     stage ('PublishBuildInfo') {
       steps {
          rtCreateDockerBuild (
-           serverId: 'jfrog'
-           sourceRepo: docker-local
+           serverId: 'jfrog',
+           sourceRepo: 'docker-local',
            kanikoImageFile: frontend-image
            )
 
          rtCreateDockerBuild (
-           serverId: 'jfrog'
-           sourceRepo: docker-local
+           serverId: 'jfrog',
+           sourceRepo: 'docker-local',
            kanikoImageFile: backend-image
            )
          rtPublishBuildInfo (
