@@ -28,7 +28,7 @@ pipeline {
 	          - name: kaniko-volume
 	            secret:
 	              secretName: docker-cred
-	    '''
+'''
 	}
   }
 
@@ -52,12 +52,12 @@ pipeline {
              sh '''
                sonar-scanner \
                -Dsonar.projectKey=hello \
-               -Dsonar.sources=backend/,frontend/,datatbase-init/ \
+               -Dsonar.sources=backend/,frontend/,database-init/ \
                -Dsonar.exclusions=test-output/ \
                -Dsonar.test=unit-test/ \
                -Dsonar.host.url=${env.SONAR_HOST_URL} \
                -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
-               -Dsonar.javascript.lcov.reportPaths=/test-output/coverage/lcov.info
+               -Dsonar.javascript.lcov.reportPaths=./test-output/coverage/lcov.info
                 '''
             }
           }
@@ -65,8 +65,9 @@ pipeline {
       }
       stage ('QualityGate') {
         steps {
-          timeout (time: 1, unit: 'HOURS')
+          timeout (time: 1, unit: 'HOURS') {
           waitForQualityGate abortPipeline: true
+           }
         }
       }
       stage ('Build-Image') {
@@ -92,7 +93,7 @@ pipeline {
               container('kaniko') {
                 sh '''
                   #!/busybox/sh
-                  VERSION=$(grep 'version' ./backend/package.json | head -1 | aws -F: '{ print $2 }' | sed s/[",]//g )
+                  VERSION=$(grep 'version' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed s/[",]//g )
 
                   /kaniko/executor \
                   --insecure \
@@ -125,4 +126,7 @@ pipeline {
         }
     }
 }
+post {
+  always {
+    junit '**/test-output/unit-test/result.xml'
 }
