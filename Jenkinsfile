@@ -11,15 +11,18 @@ spec:
   containers:
    - name: node
      image: node:alpine
-     command: ["/bin/sh","-c","sleep 99d"]
+     command: ["/bin/sh","-c"]
+     args: ["sleep 99d"]
 
    - name: sonarqube
      image: sonarsource/sonar-scanner-cli:latest
-     command: ["/bin/sh","-c","sleep 99d"]
+     command: ["/bin/sh","-c"]
+     args: ["sleep 99d"]
 
    - name: kaniko
      image: gcr.io/kaniko-project/executor:debug
-     command: ["/bin/sh","-c","sleep 99d"]
+     command: ["/bin/sh","-c"]
+     args: ["sleep 99d"]
      volumeMounts:
        - name: kaniko-volume
          mountPath: /kaniko/.docker
@@ -52,8 +55,8 @@ spec:
                -Dsonar.sources=backend,frontend,database-init \
                -Dsonar.exclusions=**/test-output/** \
                -Dsonar.tests=unit-test/ \
-               -Dsonar.host.url=${env.SONAR_HOST_URL} \
-               -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
+               -Dsonar.host.url=$(env.SONAR_HOST_URL) \
+               -Dsonar.login=$(env.SONAR_AUTH_TOKEN) \
                -Dsonar.javascript.lcov.reportPaths=./test-output/coverage/lcov.info
               '''
             }
