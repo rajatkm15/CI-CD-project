@@ -1,134 +1,142 @@
 pipeline {
-	agent{ kubernetes {
-    label 'pod-template'
-	  yaml '''
+    agent {
+        kubernetes {
+            // Use a label to distinguish this pod template
+            label 'ci-template'
+            yaml '''
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-template
+  # Note: The name and possibly namespace for the Pod should be added here.
+  name: ci-pod
 spec:
-  restartPolicy: Always
   containers:
-   - name: node
-     image: node:alpine
-     command: ["/bin/sh","-c"]
-     args: ["sleep 99d"]
+    - name: node
+      image: node:latest
+      command:
+        - sleep
+      args:
+        - 99d
 
-   - name: sonarqube
-     image: sonarsource/sonar-scanner-cli:latest
-     command: ["/bin/sh","-c"]
-     args: ["sleep 99d"]
+    - name: sonar-scanner-cli
+      image: sonarsource/sonar-scanner-cli:latest
+      command:
+        - sleep
+      args:
+        - 99d
 
-   - name: kaniko
-     image: gcr.io/kaniko-project/executor:debug
-     command: ["/bin/sh","-c"]
-     args: ["sleep 99d"]
-     volumeMounts:
-       - name: kaniko-volume
-         mountPath: /kaniko/.docker
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command:
+        - sleep
+      args:
+        - 99d
+      volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker
+
+  restartPolicy: Never
+  
   volumes:
-    - name: kaniko-volume
+    - name: kaniko-secret
       secret:
         secretName: docker-cred
-'''
- }
-}
-  stages {
-    stage ('Unit test') {
-      steps {
-        container ('node') {
-          sh '''
-            cd ./backend
-            npm install
-            npm run test
+        items:
+          - key: .dockerconfigjson
+            path: config.json
             '''
-          }
-        }
-      }
-    stage ('Static Code Analysis') {
-      steps {
-        container('sonarqube') {
-          withSonarQubeEnv ('sonarqube') {
-            sh '''
-               sonar-scanner \
-               -Dsonar.projectKey=hello \
-               -Dsonar.sources=backend,frontend,database-init \
-               -Dsonar.exclusions=**/test-output/** \
-               -Dsonar.tests=unit-test/ \
-               -Dsonar.host.url=$(env.SONAR_HOST_URL) \
-               -Dsonar.login=$(env.SONAR_AUTH_TOKEN) \
-               -Dsonar.javascript.lcov.reportPaths=./test-output/coverage/lcov.info
-              '''
-            }
-          }
-        }
-      }
-    stage ('QualityGate') {
-      steps {
-        timeout (time: 1, unit: 'HOURS') {
-          waitForQualityGate abortPipeline: true
-           }
-        }
-      }
-    stage ('Build-Image') {
-      parallel {
-        stage ('frontend') {
-          steps {
-            container('kaniko') {
-              sh '''
-                #!/busybox/sh
-                VERSION=$(grep 'version' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed s/[,"]//g )
-
-                /kaniko/executor \
-                --insecure --skip-tls-verify \
-                --dockerfile=./frontend/Dockerfile \
-                --destination=jfrog.192.168.49.2.sslip.io/artifactory/docker-local/frontend:$VERSION-$BUILD_NUMBER \
-                --image-name-with-digest-file=frontend-image
-                '''
-                 }
-              }
-          }
-        stage ('Backend') {
-          steps {
-            container('kaniko') {
-              sh '''
-                #!/busybox/sh
-                VERSION=$(grep 'version' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed s/[,"]//g )
-
-                /kaniko/executor \
-                --insecure \
-                --skip-tls-verify \
-                --dockerfile=./backend/Dockerfile \
-                --destination=jfrog.192.168.49.2.sslip.io/artifactory/docker-local/backend:$VERSION-$BUILD_NUMBER \
-                --image-name-with-digest-file=backend-image
-                '''
-              }
-            }
-          }
         }
     }
-    stage ('PublishBuildInfo') {
-      steps {
-        rtCreateDockerBuild (
-          serverId: 'jfrog',
-          sourceRepo: 'docker-local',
-          kanikoImageFile: 'frontend-image'
-          )
 
-        rtCreateDockerBuild (
-          serverId: 'jfrog',
-          sourceRepo: 'docker-local',
-          kanikoImageFile: 'backend-image'
-          )
-        rtPublishBuildInfo (
-          serverId: 'jfrog'
-          )
+    stages {
+        stage('Unit testing') {
+            steps {
+                container('node') {
+                    sh '''
+                        cd ./backend/
+                        npm install
+                        npm run test
+                    '''
+                }
+            }
         }
-     }
- }
- post {
-   always {
-      junit '**/test-output/unit-test/result.xml'
-      }
-   }
+
+        stage('SonarQube analysis') {
+            steps {
+                container('sonar-scanner-cli') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh """
+                            sonar-scanner \
+                            -Dsonar.projectKey=hello \
+                            -Dsonar.sources=backend/,frontend/,database-init/ \
+                            -Dsonar.exclusions=test-output/  \
+                            -Dsonar.tests=unit-tests/ \
+                            -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                            -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
+                            -Dsonar.javascript.lcov.reportPaths=./test-output/coverage/lcov.info
+                        """
+                    }
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build and Publish Docker Images') {
+            parallel {
+                stage('Frontend') {
+                    steps {
+                        container(name: 'kaniko', shell: '/busybox/sh') {
+                            sh '''#!/busybox/sh
+                                VERSION=$(grep '"version":' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+                                /kaniko/executor --context `pwd`/frontend --dockerfile=Dockerfile --insecure --skip-tls-verify --destination=jfrog.192.168.49.2.sslip.io/docker-local/frontend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=frontend-image-file
+                            '''
+                        }
+                    }
+                }
+
+                stage('Backend') {
+                    steps {
+                        container(name: 'kaniko', shell: '/busybox/sh') {
+                            sh '''#!/busybox/sh
+                                VERSION=$(grep '"version":' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+                                /kaniko/executor --context `pwd`/backend --dockerfile=Dockerfile --insecure --skip-tls-verify --destination=jfrog.192.168.49.2.sslip.io/docker-local/backend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=backend-image-file
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Publish build info') {
+            steps {
+                rtCreateDockerBuild (
+                    serverId: 'jfrog',
+                    sourceRepo: 'docker-local',
+                    kanikoImageFile: "frontend-image-file"
+                )
+                rtCreateDockerBuild (
+                    serverId: 'jfrog',
+                    sourceRepo: 'docker-local',
+                    kanikoImageFile: "backend-image-file"
+                )
+                rtPublishBuildInfo (
+                    serverId: 'jfrog'
+                )
+            }
+        } 
+    }
+
+    post {
+        always {
+            // This collects the JUnit XML report and displays it in Jenkins
+          junit '**/test-output/unit-test-report/junit-test-results.xml'
+        }
+    }
 }
