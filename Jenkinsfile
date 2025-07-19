@@ -95,7 +95,7 @@ spec:
                         container(name: 'kaniko', shell: '/busybox/sh') {
                             sh '''#!/busybox/sh
                                 VERSION=$(grep '"version":' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
-                                /kaniko/executor --context `pwd`/frontend --dockerfile=Dockerfile --insecure --skip-tls-verify --insecure-registry jfrog.192.168.49.2.sslip.io --skip-tls-verify-registry jfrog.192.168.49.2.sslip.io --destination=jfrog.192.168.49.2.sslip.io/docker-local/frontend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=frontend-image-file
+                                /kaniko/executor --context `pwd`/frontend --dockerfile=Dockerfile --insecure --skip-tls-verify --destination=jfrog.192.168.49.2.sslip.io/docker-local/frontend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=frontend-image-file
                             '''
                         }
                     }
