@@ -27,7 +27,7 @@ spec:
   volumes:
     - name: kaniko-volume
       secret:
-        secretName: docker-credentials
+        secretName: docker-cred
 '''
  }
 }
