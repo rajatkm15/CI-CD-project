@@ -6,7 +6,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: pod-template
-	namespace: jenkins
+  namespace: jenkins
 spec:
   restartPolicy: Always
   containers:
