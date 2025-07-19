@@ -1,5 +1,5 @@
 pipeline {
-	agent { kubernetes {
+	agent{ kubernetes {
     label 'pod-template'
 	  yaml '''
 apiVersion: v1
@@ -8,22 +8,22 @@ metadata:
   name: pod-template
 	namespace: jenkins
 spec:
-	restartPolicy: Always
-	containers:
-    - name: node
-      image: node:alpine
-      command: ["/bin/sh","-c","sleep infinity"]
+  restartPolicy: Always
+  containers:
+   - name: node
+     image: node:alpine
+     command: ["/bin/sh","-c","sleep infinity"]
 
-    - name: sonarqube
-      image: sonarsource/sonar-scanner-cli:latest
-      command: ["/bin/sh","-c","sleep","99d"]
+   - name: sonarqube
+     image: sonarsource/sonar-scanner-cli:latest
+     command: ["/bin/sh","-c","sleep","99d"]
 
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:debug
-      command: ["/bin/sh","-c","sleep","99d"]
-      volumeMounts:
-        - name: kaniko-volume
-          mountPath: /kaniko/.docker
+   - name: kaniko
+     image: gcr.io/kaniko-project/executor:debug
+     command: ["/bin/sh","-c","sleep","99d"]
+     volumeMounts:
+       - name: kaniko-volume
+         mountPath: /kaniko/.docker
   volumes:
     - name: kaniko-volume
       secret:
@@ -122,11 +122,11 @@ spec:
           serverId: 'jfrog'
           )
         }
-    }
-    post {
-      always {
-        junit '**/test-output/unit-test/result.xml'
+     }
+ }
+ post {
+   always {
+      junit '**/test-output/unit-test/result.xml'
       }
-    }
-  }
+   }
 }
