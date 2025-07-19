@@ -95,7 +95,7 @@ spec:
                         container(name: 'kaniko', shell: '/busybox/sh') {
                             sh '''#!/busybox/sh
                                 VERSION=$(grep '"version":' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
-                                /kaniko/executor --context `pwd`/frontend --dockerfile=Dockerfile --insecure --skip-tls-verify --destination=jfrog.192.168.49.2.sslip.io:80/artifactory/docker-local1/frontend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=frontend-image-file
+                                /kaniko/executor --context `pwd`/frontend --dockerfile=Dockerfile --insecure --destination=trial5qmcqv.jfrog.io/artifactory/jfrog-docker-local/frontend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=frontend-image-file
                             '''
                         }
                     }
@@ -106,7 +106,7 @@ spec:
                         container(name: 'kaniko', shell: '/busybox/sh') {
                             sh '''#!/busybox/sh
                                 VERSION=$(grep '"version":' ./backend/package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
-                                /kaniko/executor --context `pwd`/backend --dockerfile=Dockerfile --insecure --skip-tls-verify --destination=jfrog.192.168.49.2.sslip.io:80/artifactory/docker-local1/backend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=backend-image-file
+                                /kaniko/executor --context `pwd`/backend --dockerfile=Dockerfile --insecure --destination=trial5qmcqv.jfrog.io/artifactory/jfrog-docker-local/backend:$VERSION-$BUILD_NUMBER --image-name-with-digest-file=backend-image-file
                             '''
                         }
                     }
@@ -118,12 +118,12 @@ spec:
             steps {
                 rtCreateDockerBuild (
                     serverId: 'jfrog',
-                    sourceRepo: 'docker-local',
+                    sourceRepo: 'jfrog-docker-local',
                     kanikoImageFile: "frontend-image-file"
                 )
                 rtCreateDockerBuild (
                     serverId: 'jfrog',
-                    sourceRepo: 'docker-local',
+                    sourceRepo: 'jfrog-docker-local',
                     kanikoImageFile: "backend-image-file"
                 )
                 rtPublishBuildInfo (
