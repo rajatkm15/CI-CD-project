@@ -1,5 +1,5 @@
 pipeline {
-	agent{ kubernetes {
+	agent { kubernetes {
 	    label 'pod-template'
 	    yaml '''
 	      apiVersion: v1
@@ -129,4 +129,6 @@ pipeline {
 post {
   always {
     junit '**/test-output/unit-test/result.xml'
+}
+}
 }
