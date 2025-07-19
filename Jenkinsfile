@@ -45,7 +45,7 @@ spec:
     stage ('Static Code Analysis') {
       steps {
         container('sonarqube') {
-          withSonarQubeENV ('sonarqube') {
+          withSonarQubeEnv ('sonarqube') {
             sh '''
                sonar-scanner \
                -Dsonar.projectKey=hello \
