@@ -6,21 +6,20 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: pod-template
-  namespace: jenkins
 spec:
   restartPolicy: Always
   containers:
    - name: node
      image: node:alpine
-     command: ["/bin/sh","-c","sleep infinity"]
+     command: ["/bin/sh","-c","sleep 99d"]
 
    - name: sonarqube
      image: sonarsource/sonar-scanner-cli:latest
-     command: ["/bin/sh","-c","sleep","99d"]
+     command: ["/bin/sh","-c","sleep 99d"]
 
    - name: kaniko
      image: gcr.io/kaniko-project/executor:debug
-     command: ["/bin/sh","-c","sleep","99d"]
+     command: ["/bin/sh","-c","sleep 99d"]
      volumeMounts:
        - name: kaniko-volume
          mountPath: /kaniko/.docker
