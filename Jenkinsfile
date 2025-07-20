@@ -89,7 +89,7 @@ spec:
         }
 
         stage('Build and Publish Docker Images') {
-            parallel {
+            stages {
                 stage('Frontend') {
                     steps {
                         container(name: 'kaniko', shell: '/busybox/sh') {
