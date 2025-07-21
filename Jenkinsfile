@@ -169,8 +169,8 @@ spec:
                             git config user.name "${env.GIT_COMMITTER_NAME}"
                             yq eval '.backend.image.tag = \"${VERSION}-${BUILD_NUMBER}\"' values-staging.yaml -i
                             yq eval '.frontend.image.tag = \"${VERSION}-${BUILD_NUMBER}\"' values-staging.yaml -i
-                            yq eval ".backend.image.repository = \"${ARTIFACTORY_SERVER}/jfrog-docker-local/backend\"" values-staging.yaml -i
-                            yq eval ".frontend.image.repository = \"${ARTIFACTORY_SERVER}/jfrog-docker-local/frontend\"" values-staging.yaml -i
+                            yq eval '.backend.image.repository = "${ARTIFACTORY_SERVER}/jfrog-docker-local/backend"' values-staging.yaml -i
+                            yq eval '.frontend.image.repository = "${ARTIFACTORY_SERVER}/jfrog-docker-local/frontend"' values-staging.yaml -i
                             yq eval '.version = \"${VERSION}\"' Chart.yaml -i
                             git add .
                             git commit -m "Updated values-staging.yaml and Chart.yaml with new configurations"
@@ -217,8 +217,8 @@ spec:
                             cd hello-world
                             yq eval '.backend.image.tag = \"${VERSION}-${BUILD_NUMBER}\"' values-production.yaml -i
                             yq eval '.frontend.image.tag = \"${VERSION}-${BUILD_NUMBER}\"' values-production.yaml -i
-                            yq eval ".backend.image.repository = \"${ARTIFACTORY_SERVER}/jfrog-docker-local/backend\"" values-production.yaml -i
-                            yq eval ".frontend.image.repository = \"${ARTIFACTORY_SERVER}/jfrog-docker-local/frontend\"" values-production.yaml -i
+                            yq eval '.backend.image.repository = "${ARTIFACTORY_SERVER}/jfrog-docker-local/backend"' values-production.yaml -i
+                            yq eval '.frontend.image.repository = "${ARTIFACTORY_SERVER}/jfrog-docker-local/frontend"' values-production.yaml -i
                             git add .
                             git commit -m "Updated values-production.yaml and Chart.yaml with new configurations"
                             git push origin main
