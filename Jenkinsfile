@@ -133,7 +133,7 @@ spec:
                         container(name: 'kaniko', shell: '/busybox/sh') {
                             sh """
                                 #!/busybox/sh
-                                /kaniko/executor --context `pwd`/backend --dockerfile=dockerfile --insecure --destination=${ARTIFACTORY_SERVER}/jfrog-docker-local/backend:${VERSION}-${BUILD_NUMBER} --image-name-with-digest-file=backend-image-file
+                                /kaniko/executor --context `pwd`/backend --dockerfile=Dockerfile --insecure --destination=${ARTIFACTORY_SERVER}/jfrog-docker-local/backend:${VERSION}-${BUILD_NUMBER} --image-name-with-digest-file=backend-image-file
                             """
                         }
                     }
