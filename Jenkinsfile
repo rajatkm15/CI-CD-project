@@ -164,7 +164,7 @@ spec:
                         sh """
                             curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq &&\
                             chmod +x /usr/bin/yq
-                            git clone https://$username:$password@@github.com/rajatkm15/hello-world.git && cd hello-world
+                            git clone https://$username:$password@github.com/$username/hello-world.git && cd hello-world
                             git config user.email "${env.GIT_COMMITTER_EMAIL}"
                             git config user.name "${env.GIT_COMMITTER_NAME}"
                             yq eval '.backend.image.tag = \"${VERSION}-${BUILD_NUMBER}\"' values-staging.yaml -i
