@@ -65,7 +65,7 @@ spec:
 
     environment {
         ARTIFACTORY_SERVER = 'trial5qmcqv.jfrog.io'
-        ARGOCD_SERVER = 'https://argocd.192.168.49.2.sslip.io'
+        ARGOCD_SERVER = 'argocd.192.168.49.2.sslip.io'
         ARGOCD_APP_NAME_STG = 'hello-world-staging'
         ARGOCD_APP_NAME_PROD = 'hello-world-prod'
         ARGOCD_TOKEN = credentials('argo_token')
