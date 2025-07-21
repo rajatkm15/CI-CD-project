@@ -10,6 +10,6 @@ export const options = {
 };
 
 export default function () {
-  http.get('http://<IP Address of Ingress in Staging>/');
+  http.get('http://app.192.168.49.2.sslip.io/');
   sleep(3);
 }
